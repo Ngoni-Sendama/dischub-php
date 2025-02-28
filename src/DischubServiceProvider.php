@@ -2,49 +2,22 @@
 
 namespace Ngoni\DischubPhp;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\ServiceProvider;
 
-class DischubService
+class DischubServiceProvider extends ServiceProvider
 {
-    protected string $apiUrl;
-    protected string $paymentUrl;
-    protected string $notifyUrl;
-    protected string $apiKey;
-    protected string $recipient;
-
-    public function __construct()
+    public function register()
     {
-        $this->apiUrl = config('dischub.api_url', 'https://dischub.co.zw/api/orders/create/');
-        $this->paymentUrl = config('dischub.payment_url', 'https://dischub.co.zw/api/make/payment/to/');
-        $this->apiKey = config('dischub.api_key');
-        $this->notifyUrl = config('dischub.notify_url');
-        $this->recipient = config('dischub.recipient');
+        $this->app->singleton(DischubService::class, function ($app) {
+            return new DischubService();
+        });
     }
 
-    /**
-     * Create an order via Dischub API.
-     */
-    public function createOrder(array $data)
+    public function boot()
     {
-        $response = Http::post($this->apiUrl, [
-            'api_key'    => $this->apiKey,
-            'notify_url' => $this->notifyUrl,
-            'order_id'   => $data['order_id'],
-            'sender'     => $data['sender'],
-            'recipient'  => $this->recipient,
-            'amount'     => $data['amount'],
-            'currency'   => $data['currency'],
-        ]);
-
-        return $response->json();
-    }
-
-    /**
-     * Get the payment URL for an order.
-     */
-    public function getPaymentUrl(int $orderId): string
-    {
-        return "{$this->paymentUrl}{$this->recipient}/{$orderId}";
+        // Publish config file
+        $this->publishes([
+            __DIR__.'/../config/dischub.php' => config_path('dischub.php'),
+        ], 'config');
     }
 }
