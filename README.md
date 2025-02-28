@@ -19,7 +19,7 @@ composer require ngoni/dischub-php:dev-main
 Then, publish the configuration file:
 
 ```sh
-php artisan vendor:publish --tag=dischub-config
+php artisan vendor:publish --provider="Ngoni\DischubPhp\DischubServiceProvider"
 ```
 
 ## Configuration
