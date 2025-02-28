@@ -40,7 +40,7 @@ In your Laravel controller, you can use the `DischubService` to create an order 
 
 ```php
 use Illuminate\Http\Request;
-use App\Services\DischubService;
+use Ngoni\DischubPhp\DischubService;
 
 class OrderController extends Controller
 {
