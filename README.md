@@ -58,7 +58,7 @@ class OrderController extends Controller
     public function createOrder(Request $request)
     {
         $validated = $request->validate([
-            'order_id'  => 'required|numeric|unique:orders,order_id',
+            'order_id'  => 'required|numeric',
             'sender'    => 'required|email',
             'amount'    => 'required|numeric|min:0.01|max:480',
             'currency'  => 'required|in:USD,ZWG',
