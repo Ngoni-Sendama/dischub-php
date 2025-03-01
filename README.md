@@ -1,4 +1,5 @@
-# Dischub PHP Package
+![Image](3step.png "3-step-image")
+# Dischub PHP Package for 3-Step
 
 This package provides an easy way to integrate with Dischub's API for order creation and payment handling in Laravel applications.
 

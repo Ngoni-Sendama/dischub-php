@@ -1,6 +1,7 @@
 {
     "name": "ngoni/dischub-php",
     "description": "A Laravel package for integrating with Dischub API",
+    "license": "MIT",
     "type": "library",
     "autoload": {
         "psr-4": {
