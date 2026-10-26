@@ -45,12 +45,24 @@ The server uses stdio and is normally started by an MCP client, not from a termi
 
 ## Configuration
 
-Set these environment variables in a `.env` file (create it in your project root):
+### Set Up Credentials (⚠️ Important)
+
+Create a `.env` file in your project root with your credentials:
 
 ```env
 DISCHUB_API_KEY=your-api-key
 DISCHUB_RECIPIENT=merchant@example.com
 ```
+
+**⚠️ SECURITY WARNING:**
+- **Never** commit `.env` to git
+- **Never** share your DISCHUB_API_KEY
+- Add `.env` to `.gitignore`:
+  ```bash
+  echo ".env" >> .gitignore
+  ```
+- The MCP server automatically loads `.env` when it starts
+- If you change credentials, restart Claude Code for changes to take effect
 
 | Variable | Required | Description |
 | --- | --- | --- |

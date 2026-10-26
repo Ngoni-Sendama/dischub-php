@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import "dotenv/config.js";
+
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 import { createDischubServer } from "./server.js";
