@@ -2,5 +2,14 @@
 # EnvKit — per-project PHP error log (do not commit)
 php_error.log
 
+# Composer
+/vendor/
+/composer.lock
+
 # PHPUnit
-.phpunit.cache/
+/.phpunit.cache/
+/coverage/
+
+# Editors
+/.idea/
+/.vscode/

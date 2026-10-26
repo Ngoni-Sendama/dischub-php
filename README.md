@@ -1,4 +1,3 @@
-![Image](3step.png "3-step-image")
 # Dischub PHP Package
 
 A Laravel package for integrating with the [Dischub](https://dischub.co.zw) API.

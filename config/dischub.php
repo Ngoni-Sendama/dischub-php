@@ -59,4 +59,17 @@ return [
 
     'zimswitch_widget_url' => env('DISCHUB_ZIMSWITCH_WIDGET_URL', 'https://dischub.co.zw/api/zimswitch/non/redirect/payment/to/'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | HTTP Client
+    |--------------------------------------------------------------------------
+    |
+    | Timeouts are in seconds.
+    |
+    */
+
+    'timeout' => env('DISCHUB_TIMEOUT', 30),
+
+    'connect_timeout' => env('DISCHUB_CONNECT_TIMEOUT', 10),
+
 ];
