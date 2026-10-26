@@ -71,6 +71,16 @@ class DischubConfig
         );
     }
 
+    public function timeout(): float
+    {
+        return $this->positiveNumber($this->values['timeout'] ?? null, 30.0);
+    }
+
+    public function connectTimeout(): float
+    {
+        return $this->positiveNumber($this->values['connect_timeout'] ?? null, 10.0);
+    }
+
     public function toArray(): array
     {
         return $this->values;
@@ -103,5 +113,14 @@ class DischubConfig
     protected function url($value, string $default): string
     {
         return $this->nullableString($value) ?? $default;
+    }
+
+    protected function positiveNumber($value, float $default): float
+    {
+        if (! is_numeric($value) || (float) $value <= 0) {
+            return $default;
+        }
+
+        return (float) $value;
     }
 }

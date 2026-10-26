@@ -2,6 +2,11 @@
 
 A Laravel package for integrating with the [Dischub](https://dischub.co.zw) API.
 
+[![CI](https://github.com/Ngoni-Sendama/dischub-php/actions/workflows/ci.yml/badge.svg)](https://github.com/Ngoni-Sendama/dischub-php/actions/workflows/ci.yml)
+[![Latest Stable Version](https://img.shields.io/packagist/v/ngoni/dischub-php.svg)](https://packagist.org/packages/ngoni/dischub-php)
+[![Total Downloads](https://img.shields.io/packagist/dt/ngoni/dischub-php.svg)](https://packagist.org/packages/ngoni/dischub-php)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 It supports both official integration types:
 
 - **Redirect integration** - create an order and redirect the customer to Dischub to pay.
@@ -16,7 +21,8 @@ You can use one integration type or both in the same application.
 
 - PHP 8.2, 8.3, 8.4 or 8.5.
 - Recommended security releases: PHP **8.2.35+**, **8.3.36+**, **8.4.27+** or **8.5.12+**.
-- Laravel 10, 11 or 12. Use Laravel 11 or 12 with PHP 8.3 and newer.
+- Laravel 12.
+- Laravel 10 and 11 are end of life and are not supported because they no longer receive security fixes.
 
 PHP 8.5 is recommended for new installations. PHP 8.2 reaches end of life on 31 December 2026. PHP 8.1 and older are not supported and no longer receive security updates from the PHP project.
 
@@ -51,6 +57,10 @@ DISCHUB_RECIPIENT=your_merchant_email@example.com
 DISCHUB_CALLBACK_URL=https://yourdomain.com/dischub/callback
 DISCHUB_REDIRECT_URL=https://yourdomain.com/payment/complete
 DISCHUB_MODE=test
+
+# Optional
+DISCHUB_TIMEOUT=30
+DISCHUB_CONNECT_TIMEOUT=10
 ```
 
 | Variable | Used by | Description |
@@ -60,6 +70,8 @@ DISCHUB_MODE=test
 | `DISCHUB_CALLBACK_URL` | Redirect, ZimSwitch | HTTPS URL that receives the payment status callback. |
 | `DISCHUB_REDIRECT_URL` | Redirect | URL the customer returns to after paying (HTTP or HTTPS). |
 | `DISCHUB_MODE` | Redirect | `test` or `live`. |
+| `DISCHUB_TIMEOUT` | Both | Total HTTP request timeout in seconds. Default `30`. |
+| `DISCHUB_CONNECT_TIMEOUT` | Both | Connection timeout in seconds. Default `10`. |
 
 `DISCHUB_RECIPIENT_EMAIL` and `DISCHUB_NOTIFY_URL` are still accepted for backwards compatibility with older published configs.
 
@@ -129,6 +141,18 @@ Possible statuses are `success`, `pending` and `failed`.
 Use `nonRedirect()` for payments completed without leaving your platform.
 
 Non-redirect payments do not support test mode. Only ZimSwitch accepts a `callback_url`.
+
+### Phone number formats
+
+The package validates phone numbers before sending them to Dischub:
+
+| Field | Accepted formats |
+| --- | --- |
+| `sender` | `+263780070488`, `0263780070488`, `0780070488` |
+| `ecocash_number` | `+263780000000`, `0780000000` |
+| `omari_number` | `263780000000` |
+
+Spaces, dashes, missing country codes and numbers of the wrong length are rejected with an `InvalidArgumentException`.
 
 ### EcoCash
 
@@ -246,6 +270,15 @@ $dischub->createOrder($data);
 $dischub->getPaymentUrl($orderId);
 $dischub->getPaymentStatus($orderId);
 ```
+
+## Testing
+
+```sh
+composer install
+composer test
+```
+
+The suite includes unit tests, Laravel service-provider tests and HTTP request/response tests using Laravel's HTTP client fake.
 
 ## Security
 

@@ -27,11 +27,15 @@ class DischubClient
     public function post(string $url, array $payload): array
     {
         try {
-            $response = Http::withHeaders([
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'X-Api-Key' => $this->config->apiKey(),
-            ])->post($url, $payload);
+            $response = Http::timeout($this->config->timeout())
+                ->connectTimeout($this->config->connectTimeout())
+                ->withHeaders([
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'User-Agent' => 'ngoni/dischub-php',
+                    'X-Api-Key' => $this->config->apiKey(),
+                ])
+                ->post($url, $payload);
         } catch (ConnectionException $exception) {
             return [
                 'status' => 'error',

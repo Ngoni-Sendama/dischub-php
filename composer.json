@@ -13,17 +13,24 @@
     "homepage": "https://github.com/Ngoni-Sendama/dischub-php",
     "license": "MIT",
     "type": "library",
+    "authors": [
+        {
+            "name": "Ngonidzashe Sendama",
+            "homepage": "https://github.com/Ngoni-Sendama"
+        }
+    ],
     "support": {
         "issues": "https://github.com/Ngoni-Sendama/dischub-php/issues",
         "source": "https://github.com/Ngoni-Sendama/dischub-php"
     },
     "require": {
         "php": "^8.2",
-        "illuminate/http": "^10.0|^11.0|^12.0",
-        "illuminate/support": "^10.0|^11.0|^12.0"
+        "ext-mbstring": "*",
+        "illuminate/http": "^12.0",
+        "illuminate/support": "^12.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "orchestra/testbench": "^10.0",
         "phpunit/phpunit": "^10.5|^11.5|^12.0"
     },
     "autoload": {

@@ -17,6 +17,8 @@ final class DischubServiceTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $config = new DischubConfig([
             'api_key' => 'secret',
             'recipient' => 'merchant@example.com',

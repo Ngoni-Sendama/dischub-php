@@ -12,6 +12,21 @@ class PaymentValidator
 
     public const PAYMENT_METHODS = ['ecocash', 'innbucks', 'omari', 'zimswitch'];
 
+    /**
+     * Accepted sender formats: +263780070488, 0263780070488 and 0780070488.
+     */
+    public const SENDER_PATTERN = '/^(?:\+263|0263|0)7\d{8}$/';
+
+    /**
+     * Accepted EcoCash number formats: +263780000000 and 0780000000.
+     */
+    public const ECOCASH_NUMBER_PATTERN = '/^(?:\+263|0)7\d{8}$/';
+
+    /**
+     * Accepted Omari number format: 263780000000.
+     */
+    public const OMARI_NUMBER_PATTERN = '/^2637\d{8}$/';
+
     public function orderId($value): string
     {
         if (is_int($value)) {
@@ -37,13 +52,32 @@ class PaymentValidator
 
     public function sender($value): string
     {
-        $value = $this->stringValue($value, 'sender');
+        return $this->matchingPhoneNumber(
+            $value,
+            'sender',
+            self::SENDER_PATTERN,
+            '+263780070488, 0263780070488 or 0780070488'
+        );
+    }
 
-        if (! preg_match('/^(\+263|0263|0)7\d{8}$/', $value)) {
-            throw new InvalidArgumentException('invalid sender phone number format.');
-        }
+    public function ecocashNumber($value): string
+    {
+        return $this->matchingPhoneNumber(
+            $value,
+            'ecocash_number',
+            self::ECOCASH_NUMBER_PATTERN,
+            '+263780000000 or 0780000000'
+        );
+    }
 
-        return $value;
+    public function omariNumber($value): string
+    {
+        return $this->matchingPhoneNumber(
+            $value,
+            'omari_number',
+            self::OMARI_NUMBER_PATTERN,
+            '263780000000'
+        );
     }
 
     public function amount($value)
@@ -133,6 +167,19 @@ class PaymentValidator
         if ($scheme === null || $host === null || ! in_array(strtolower($scheme), $schemes, true)) {
             throw new InvalidArgumentException(
                 $field . ' must be a valid URL using the ' . implode(' or ', $schemes) . ' scheme.'
+            );
+        }
+
+        return $value;
+    }
+
+    protected function matchingPhoneNumber($value, string $field, string $pattern, string $accepted): string
+    {
+        $value = $this->stringValue($value, $field);
+
+        if (! preg_match($pattern, $value)) {
+            throw new InvalidArgumentException(
+                "invalid {$field} phone number format. Accepted formats: {$accepted}."
             );
         }
 

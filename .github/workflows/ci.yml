@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     name: PHP ${{ matrix.php }}
@@ -17,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
           coverage: none
@@ -28,8 +31,16 @@ jobs:
       - name: Validate composer.json
         run: composer validate --no-check-publish
 
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Resolve dependencies
+        run: |
+          composer require --dev --no-update \
+            "laravel/framework:^12.0" \
+            "orchestra/testbench:^10.0"
+
+          composer update --no-interaction --prefer-dist --no-progress
+
+      - name: Audit dependencies
+        run: composer audit --no-interaction
 
       - name: Lint PHP files
         run: find src config tests -name '*.php' -print0 | xargs -0 -n1 php -l

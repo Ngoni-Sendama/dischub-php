@@ -49,13 +49,13 @@ class NonRedirectIntegration
 
         if ($method === 'ecocash') {
             $payload['payment_details'] = [
-                'ecocash_number' => $this->validator->requiredString($data, 'ecocash_number'),
+                'ecocash_number' => $this->validator->ecocashNumber($data['ecocash_number'] ?? null),
             ];
         }
 
         if ($method === 'omari') {
             $payload['payment_details'] = [
-                'omari_number' => $this->validator->requiredString($data, 'omari_number'),
+                'omari_number' => $this->validator->omariNumber($data['omari_number'] ?? null),
             ];
         }
 

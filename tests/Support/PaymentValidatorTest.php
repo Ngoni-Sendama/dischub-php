@@ -13,6 +13,8 @@ final class PaymentValidatorTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->validator = new PaymentValidator();
     }
 
@@ -50,11 +52,50 @@ final class PaymentValidatorTest extends TestCase
         ];
     }
 
-    public function test_it_rejects_invalid_sender_formats(): void
+    #[DataProvider('invalidSenderProvider')]
+    public function test_it_rejects_invalid_sender_formats(string $sender): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->validator->sender('not-a-phone');
+        $this->validator->sender($sender);
+    }
+
+    public static function invalidSenderProvider(): array
+    {
+        return [
+            ['not-a-phone'],
+            ['263780070488'],
+            ['00263780070488'],
+            ['078007048'],
+            ['+2637800704880'],
+            ['+263 780070488'],
+            ['+263-780-070-488'],
+        ];
+    }
+
+    public function test_it_accepts_valid_ecocash_numbers(): void
+    {
+        $this->assertSame('+263780000000', $this->validator->ecocashNumber('+263780000000'));
+        $this->assertSame('0780000000', $this->validator->ecocashNumber('0780000000'));
+    }
+
+    public function test_it_rejects_invalid_ecocash_numbers(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->validator->ecocashNumber('263780000000');
+    }
+
+    public function test_it_accepts_valid_omari_numbers(): void
+    {
+        $this->assertSame('263780000000', $this->validator->omariNumber('263780000000'));
+    }
+
+    public function test_it_rejects_invalid_omari_numbers(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->validator->omariNumber('+263780000000');
     }
 
     public function test_it_accepts_amounts_within_the_api_range(): void

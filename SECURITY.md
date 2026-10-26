@@ -10,7 +10,7 @@
 | 8.2 | Yes | 8.2.35 |
 | 8.1 and older | No | Upgrade required |
 
-Laravel 10, 11 and 12 are supported. All of these can run on PHP 8.2 and newer.
+Laravel 12 is supported. Laravel 10 and 11 are end of life and are no longer supported because they do not receive security fixes. Laravel 12 requires PHP 8.2 or newer.
 
 These recommended minimums are required to fix CVE-2026-109618 and CVE-2026-109619. PHP 8.1 and older no longer receive security updates from the PHP project.
 

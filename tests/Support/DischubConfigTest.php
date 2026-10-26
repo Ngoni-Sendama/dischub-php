@@ -64,6 +64,43 @@ final class DischubConfigTest extends TestCase
         $this->assertSame('https://example.com/orders', $config->ordersUrl());
     }
 
+    public function test_it_has_default_http_timeouts(): void
+    {
+        $config = new DischubConfig([
+            'api_key' => 'secret',
+            'recipient' => 'merchant@example.com',
+        ]);
+
+        $this->assertSame(30.0, $config->timeout());
+        $this->assertSame(10.0, $config->connectTimeout());
+    }
+
+    public function test_it_uses_configured_http_timeouts(): void
+    {
+        $config = new DischubConfig([
+            'api_key' => 'secret',
+            'recipient' => 'merchant@example.com',
+            'timeout' => 5,
+            'connect_timeout' => 2,
+        ]);
+
+        $this->assertSame(5.0, $config->timeout());
+        $this->assertSame(2.0, $config->connectTimeout());
+    }
+
+    public function test_it_ignores_invalid_http_timeouts(): void
+    {
+        $config = new DischubConfig([
+            'api_key' => 'secret',
+            'recipient' => 'merchant@example.com',
+            'timeout' => 'invalid',
+            'connect_timeout' => -1,
+        ]);
+
+        $this->assertSame(30.0, $config->timeout());
+        $this->assertSame(10.0, $config->connectTimeout());
+    }
+
     public function test_it_requires_an_api_key(): void
     {
         $this->expectException(InvalidArgumentException::class);

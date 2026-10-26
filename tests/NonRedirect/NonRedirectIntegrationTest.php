@@ -19,6 +19,8 @@ final class NonRedirectIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->config = new DischubConfig([
             'api_key' => 'secret',
             'recipient' => 'merchant@example.com',
@@ -146,6 +148,32 @@ final class NonRedirectIntegrationTest extends TestCase
             'sender' => '+263780070488',
             'amount' => 10,
             'currency' => 'USD',
+        ]);
+    }
+
+    public function test_it_rejects_invalid_ecocash_numbers(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->integration->ecocash([
+            'order_id' => 'order-1',
+            'sender' => '+263780070488',
+            'amount' => 10,
+            'currency' => 'USD',
+            'ecocash_number' => '263780000000',
+        ]);
+    }
+
+    public function test_it_rejects_invalid_omari_numbers(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->integration->omari([
+            'order_id' => 'order-1',
+            'sender' => '+263780070488',
+            'amount' => 10,
+            'currency' => 'USD',
+            'omari_number' => '+263780000000',
         ]);
     }
 

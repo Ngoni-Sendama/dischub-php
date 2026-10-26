@@ -19,6 +19,8 @@ final class RedirectIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->config = new DischubConfig([
             'api_key' => 'secret',
             'recipient' => 'merchant@example.com',
