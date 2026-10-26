@@ -141,4 +141,13 @@ npm login
 npm publish --access public
 ```
 
+npm requires two-factor authentication for publishing. If your account has 2FA enabled:
+
+```sh
+npm publish --access public --otp=123456
+```
+
+For CI, create a granular access token with **Bypass 2FA** enabled and store it as the
+`NPM_TOKEN` repository secret. The publish workflow passes it to npm as `NODE_AUTH_TOKEN`.
+
 The package name `dischub-mcp` is currently available on npm.
