@@ -8,10 +8,17 @@
             "Ngoni\\DischubPhp\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Ngoni\\DischubPhp\\Tests\\": "tests/"
+        }
+    },
     "require": {
-        "php": "^8.0",
-        "illuminate/support": "^9.0|^10.0|^11.0"
-
+        "php": "^8.2",
+        "illuminate/support": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5|^11.5|^12.0"
     },
     "extra": {
         "laravel": {
@@ -20,6 +27,8 @@
             ]
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "scripts": {
+        "test": "phpunit"
+    },
+    "minimum-stability": "stable"
 }

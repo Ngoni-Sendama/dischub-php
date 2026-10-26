@@ -10,6 +10,19 @@ It supports both official integration types:
 
 You can use one integration type or both in the same application.
 
+> [!WARNING]
+> **Critical PHP security update required.** PHP **8.5.12**, **8.4.27**, **8.3.36** and **8.2.35** fix two critical vulnerabilities that can allow unauthenticated remote code execution (CVE-2026-109618 and CVE-2026-109619). Update PHP immediately. This package cannot mitigate these vulnerabilities; only updating PHP does. See the [official PHP security advisory](https://www.php.net/archive/2026.php#2026-10-21-5).
+
+## Requirements
+
+- PHP 8.2, 8.3, 8.4 or 8.5.
+- Recommended security releases: PHP **8.2.35+**, **8.3.36+**, **8.4.27+** or **8.5.12+**.
+- Laravel 10, 11 or 12. Use Laravel 11 or 12 with PHP 8.3 and newer.
+
+PHP 8.5 is recommended for new installations. PHP 8.2 reaches end of life on 31 December 2026. PHP 8.1 and older are not supported and no longer receive security updates from the PHP project.
+
+The test suite runs on PHP 8.2, 8.3, 8.4 and 8.5 in CI.
+
 ## Installation
 
 ```sh
@@ -234,6 +247,25 @@ $dischub->createOrder($data);
 $dischub->getPaymentUrl($orderId);
 $dischub->getPaymentStatus($orderId);
 ```
+
+## Security
+
+### Critical PHP advisory - 21 October 2026
+
+PHP **8.5.12**, **8.4.27**, **8.3.36** and **8.2.35** fix two critical vulnerabilities that can allow unauthenticated remote code execution:
+
+- **CVE-2026-109618** - RCE via OOM corruption.
+- **CVE-2026-109619** - RCE via stale global state.
+
+All PHP installations serving web requests are at risk, including PHP-FPM, Apache with `mod_php`, `php-cgi`, FrankenPHP and LiteSpeed. Updating PHP is the only complete fix.
+
+Read the full [PHP security advisory](https://www.php.net/archive/2026.php#2026-10-21-5) and update to one of the patched releases immediately.
+
+If you cannot update right away, PHP.net lists temporary mitigations such as disabling session upload progress (`session.upload_progress.enabled=0`) and, on PHP 8.5, disabling fatal error backtraces (`fatal_error_backtraces=0`). These reduce exposure but do not make an installation safe.
+
+### Reporting a vulnerability
+
+Please report security issues privately through the repository's [GitHub security advisories](https://github.com/Ngoni-Sendama/dischub-php/security/advisories/new) instead of opening a public issue.
 
 ## License
 

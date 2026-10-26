@@ -1,0 +1,6 @@
+
+# EnvKit — per-project PHP error log (do not commit)
+php_error.log
+
+# PHPUnit
+.phpunit.cache/
