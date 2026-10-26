@@ -141,21 +141,35 @@ Create a `.env` file in your project root with your credentials.
 
 ## Testing Payments
 
-For testing payment creation with redirect and callback URLs:
+### Quick Start (Fully Automated)
 
 ```sh
-# 1. Install ngrok (https://ngrok.com/download)
-# 2. Run the testing setup script
-./mcp/scripts/test-payment.sh
+./mcp/scripts/setup-payment-test.sh
 ```
 
-This script:
-- Creates sample redirect and callback pages
-- Starts a local HTTP server
-- Exposes them via ngrok tunnel
-- Provides public URLs for payment testing
+This script automatically:
+- ✅ Downloads ngrok if not installed (supports Linux, macOS, Windows)
+- ✅ Detects your OS and CPU architecture
+- ✅ Creates sample redirect and callback pages
+- ✅ Starts a local HTTP server
+- ✅ Exposes them via ngrok public tunnel
+- ✅ Displays ready-to-use payment URLs
 
-Then use those URLs when creating payments via Claude Code.
+**Example output:**
+```
+Redirect URL: https://abc123.ngrok.io/redirect.html
+Callback URL: https://abc123.ngrok.io/callback.html
+```
+
+Then create a payment in Claude Code using those URLs.
+
+### Manual Setup (If Preferred)
+
+If you already have ngrok installed:
+
+```sh
+./mcp/scripts/test-payment.sh
+```
 
 ## Development
 
