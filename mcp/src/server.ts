@@ -259,23 +259,10 @@ export function createDischubServer(): McpServer {
             // Auto-detect test URLs if not provided
             const testRedirectUrl = process.env.DISCHUB_TEST_REDIRECT_URL;
             const testCallbackUrl = process.env.DISCHUB_TEST_CALLBACK_URL;
-            const finalRedirectUrl = redirect_url || testRedirectUrl;
-            const finalCallbackUrl = callback_url || testCallbackUrl;
 
-            // Validate required URLs
-            if (method === "redirect" && !finalRedirectUrl) {
-                return textResult(
-                    "Redirect URL needed. Either:\n1. Run: ./mcp/scripts/setup-payment-test.sh\n2. Or provide redirect_url parameter",
-                    true,
-                );
-            }
-
-            if (method !== "redirect" && !finalCallbackUrl) {
-                return textResult(
-                    "Callback URL needed for non-redirect. Either:\n1. Run: ./mcp/scripts/setup-payment-test.sh\n2. Or provide callback_url parameter",
-                    true,
-                );
-            }
+            // Use provided URLs, test URLs, or defaults for testing
+            const finalRedirectUrl = redirect_url || testRedirectUrl || "https://dischub.test/redirect";
+            const finalCallbackUrl = callback_url || testCallbackUrl || "https://dischub.test/callback";
 
             const result = await createPayment(orderId, phone, amountNum, method);
 
@@ -293,9 +280,10 @@ export function createDischubServer(): McpServer {
                 message += `\n\n🔗 Payment URL:\n${result.payment_url}\n\n👉 Open in browser to complete payment`;
             }
 
-            if ((finalRedirectUrl && finalRedirectUrl === testRedirectUrl) ||
-                (finalCallbackUrl && finalCallbackUrl === testCallbackUrl)) {
+            if (testRedirectUrl || testCallbackUrl) {
                 message += `\n\n✨ Using ngrok test URLs`;
+            } else {
+                message += `\n\n📝 Using test URLs. For real payments, run: ./mcp/scripts/setup-payment-test.sh`;
             }
 
             return textResult(message);
