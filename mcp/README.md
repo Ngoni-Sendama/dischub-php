@@ -139,6 +139,24 @@ Create a `.env` file in your project root with your credentials.
   the API works, but it does not create or modify a payment.
 - Do not commit API keys to `opencode.json` or `claude_desktop_config.json`.
 
+## Testing Payments
+
+For testing payment creation with redirect and callback URLs:
+
+```sh
+# 1. Install ngrok (https://ngrok.com/download)
+# 2. Run the testing setup script
+./mcp/scripts/test-payment.sh
+```
+
+This script:
+- Creates sample redirect and callback pages
+- Starts a local HTTP server
+- Exposes them via ngrok tunnel
+- Provides public URLs for payment testing
+
+Then use those URLs when creating payments via Claude Code.
+
 ## Development
 
 ```sh
