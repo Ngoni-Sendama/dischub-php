@@ -27,7 +27,7 @@ function textOf(result: Awaited<ReturnType<Client["callTool"]>>): string {
 }
 
 describe("MCP server", () => {
-    it("exposes only read-only tools and documentation resources", async () => {
+    it("exposes tools for documentation, validation, and payment creation", async () => {
         const connection = await connect();
 
         try {
@@ -35,12 +35,13 @@ describe("MCP server", () => {
             const names = tools.tools.map((tool) => tool.name).sort();
 
             expect(names).toEqual([
+                "dischub_create_payment",
                 "dischub_get_doc",
                 "dischub_get_payment_status",
                 "dischub_search_docs",
                 "dischub_validate_payment",
             ]);
-            expect(names.some((name) => /create|refund|capture/.test(name))).toBe(false);
+            expect(names.some((name) => /refund|capture/.test(name))).toBe(false);
 
             const resources = await connection.client.listResources();
 

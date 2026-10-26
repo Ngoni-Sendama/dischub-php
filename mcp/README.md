@@ -1,6 +1,6 @@
 # Dischub MCP Server
 
-A read-only [Model Context Protocol](https://modelcontextprotocol.io) server for the
+A [Model Context Protocol](https://modelcontextprotocol.io) server for the
 [`ngoni/dischub-php`](https://packagist.org/packages/ngoni/dischub-php) package.
 
 It lets AI assistants:
@@ -8,9 +8,10 @@ It lets AI assistants:
 - search the package README, security policy, changelog and official Dischub API docs;
 - read a full document by slug;
 - validate redirect and non-redirect payment input using the same rules as the PHP package;
+- create and initiate Dischub payments from natural language;
 - read the status of an existing Dischub payment.
 
-It **cannot** create orders, capture payments, issue refunds or move money.
+It **cannot** capture payments, issue refunds, or move money directly.
 
 ## Tools
 
@@ -19,6 +20,7 @@ It **cannot** create orders, capture payments, issue refunds or move money.
 | `dischub_search_docs` | Search documentation and return matching sections. |
 | `dischub_get_doc` | Read a full document by slug, title or file name. |
 | `dischub_validate_payment` | Validate a payload and return normalized values or field errors. |
+| `dischub_create_payment` | Create and initiate a payment with amount and phone number. |
 | `dischub_get_payment_status` | Read the status of an existing payment. |
 
 ## Resources

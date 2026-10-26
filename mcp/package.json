@@ -1,6 +1,6 @@
 {
     "name": "dischub-mcp",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Read-only MCP server for Dischub documentation, payment validation and payment status.",
     "type": "module",
     "bin": {
