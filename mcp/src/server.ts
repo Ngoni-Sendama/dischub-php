@@ -205,41 +205,30 @@ export function createDischubServer(): McpServer {
         {
             title: "Create a Dischub payment",
             description:
-                "Create and initiate a Dischub payment. Supports redirect (bank portal) and non-redirect (direct payment method) payments. Returns a payment URL that should be opened in a browser. Requires DISCHUB_API_KEY and DISCHUB_RECIPIENT in a .env file.",
+                "Quickly create a Dischub payment. Just provide amount and phone number - everything else is auto-configured. Example: 'Create payment for 100 ZWG to +263783883412'",
             inputSchema: {
-                order_id: z
-                    .union([z.string(), z.number()])
-                    .describe("Unique order identifier, 30 characters or fewer."),
-                sender: z
-                    .string()
-                    .describe("Customer phone number in +263780070488, 0780070488 or 0263780070488 format."),
                 amount: z
                     .union([z.string(), z.number()])
-                    .describe("Payment amount greater than 0 and less than 100000."),
-                integration: z
-                    .enum(["redirect", "non_redirect"])
+                    .describe("Payment amount (e.g., 100 for 100 ZWG)"),
+                phone: z
+                    .string()
+                    .describe("Customer phone number (e.g., +263783883412 or 0780070488)"),
+                order_id: z
+                    .union([z.string(), z.number()])
                     .optional()
-                    .describe("Payment type: 'redirect' (bank portal) or 'non_redirect' (direct method). Defaults to 'redirect'."),
-                payment_method: z
+                    .describe("Optional order ID. Auto-generated if not provided."),
+                method: z
                     .string()
                     .optional()
-                    .describe("For non_redirect only: ecocash, innbucks, omari, or zimswitch."),
+                    .describe("Payment method: 'redirect' (bank), 'ecocash', 'innbucks', 'omari', 'zimswitch'. Defaults to 'redirect'."),
                 redirect_url: z
                     .string()
                     .optional()
-                    .describe("For redirect payments: HTTP/HTTPS URL to return customer after payment."),
+                    .describe("Optional: Custom redirect URL. Auto-uses ngrok test URL if available."),
                 callback_url: z
                     .string()
                     .optional()
-                    .describe("HTTPS webhook URL for payment notifications. Optional for redirect, required for non_redirect."),
-                mode: z
-                    .enum(["test", "live"])
-                    .optional()
-                    .describe("For redirect payments: 'test' or 'live'. Defaults to 'test'."),
-                recipient: z
-                    .string()
-                    .optional()
-                    .describe("Merchant account email. Defaults to DISCHUB_RECIPIENT."),
+                    .describe("Optional: Custom callback URL. Auto-uses ngrok test URL if available."),
             },
             annotations: {
                 readOnlyHint: false,
@@ -248,82 +237,65 @@ export function createDischubServer(): McpServer {
                 openWorldHint: true,
             },
         },
-        async ({
-            order_id: orderIdInput,
-            sender,
-            amount: amountInput,
-            integration = "redirect",
-            payment_method,
-            redirect_url,
-            callback_url,
-            mode = "test",
-            recipient,
-        }) => {
-            const errors: ValidationIssue[] = [];
-            const orderId = validateOrderId(orderIdInput, errors);
-            const amountNum = typeof amountInput === "string" ? parseFloat(amountInput) : amountInput;
-
-            if (orderId === undefined) {
-                return textResult(
-                    `Invalid order_id.\n\n${errors.map((error) => `- ${error.message}`).join("\n")}`,
-                    true,
-                );
+        async ({ amount: amountInput, phone, order_id: orderIdInput, method = "redirect", redirect_url, callback_url }) => {
+            // Generate order ID if not provided
+            let orderId: string;
+            if (orderIdInput) {
+                const errors: ValidationIssue[] = [];
+                orderId = validateOrderId(orderIdInput, errors) || `order-${Date.now()}`;
+            } else {
+                orderId = `order-${Date.now()}`;
             }
 
+            // Validate amount
+            const amountNum = typeof amountInput === "string" ? parseFloat(amountInput) : amountInput;
             if (!Number.isFinite(amountNum) || amountNum <= 0 || amountNum >= 100000) {
                 return textResult(
-                    `Invalid amount. Must be greater than 0 and less than 100000. Got: ${amountNum}`,
+                    `Invalid amount. Must be 0 < amount < 100000. Got: ${amountNum}`,
                     true,
                 );
             }
 
-            if (integration === "non_redirect" && !payment_method) {
-                return textResult(
-                    "For non_redirect payments, payment_method is required (ecocash, innbucks, omari, or zimswitch).",
-                    true,
-                );
-            }
-
-            // Auto-detect test URLs from environment if not provided
+            // Auto-detect test URLs if not provided
             const testRedirectUrl = process.env.DISCHUB_TEST_REDIRECT_URL;
             const testCallbackUrl = process.env.DISCHUB_TEST_CALLBACK_URL;
-
-            if (integration === "redirect" && !redirect_url && !testRedirectUrl) {
-                return textResult("For redirect payments, redirect_url is required.", true);
-            }
-
-            if (!callback_url && !testCallbackUrl && integration === "non_redirect") {
-                return textResult(
-                    "For non_redirect payments, callback_url is required (or run ./mcp/scripts/setup-payment-test.sh for automatic testing URLs).",
-                    true,
-                );
-            }
-
-            // Use provided URLs or fallback to test URLs
             const finalRedirectUrl = redirect_url || testRedirectUrl;
             const finalCallbackUrl = callback_url || testCallbackUrl;
 
-            const method = integration === "redirect" ? "redirect" : payment_method || "redirect";
-            const result = await createPayment(orderId, sender, amountNum, method, recipient);
+            // Validate required URLs
+            if (method === "redirect" && !finalRedirectUrl) {
+                return textResult(
+                    "Redirect URL needed. Either:\n1. Run: ./mcp/scripts/setup-payment-test.sh\n2. Or provide redirect_url parameter",
+                    true,
+                );
+            }
+
+            if (method !== "redirect" && !finalCallbackUrl) {
+                return textResult(
+                    "Callback URL needed for non-redirect. Either:\n1. Run: ./mcp/scripts/setup-payment-test.sh\n2. Or provide callback_url parameter",
+                    true,
+                );
+            }
+
+            const result = await createPayment(orderId, phone, amountNum, method);
 
             if (!result.ok) {
                 return textResult(result.error ?? "Payment creation failed.", true);
             }
 
-            let message = `✅ Payment created successfully!\n\nOrder ID: ${result.order_id}\nType: ${integration === "redirect" ? "Redirect (Bank Portal)" : "Non-Redirect (" + payment_method + ")"}\n`;
+            let message = `✅ Payment created!\n\n📌 Order: ${result.order_id}\n💳 Type: ${method === "redirect" ? "Bank Portal" : method.toUpperCase()}`;
 
             if (result.transaction_reference) {
-                message += `Transaction Reference: ${result.transaction_reference}\n`;
+                message += `\n🔑 Reference: ${result.transaction_reference}`;
             }
 
             if (result.payment_url) {
-                message += `\n🔗 Payment URL:\n${result.payment_url}\n\n⬆️ Open the URL above in your browser to complete the payment.`;
+                message += `\n\n🔗 Payment URL:\n${result.payment_url}\n\n👉 Open in browser to complete payment`;
             }
 
-            // Show if test URLs were used
             if ((finalRedirectUrl && finalRedirectUrl === testRedirectUrl) ||
                 (finalCallbackUrl && finalCallbackUrl === testCallbackUrl)) {
-                message += `\n\n📍 Using auto-generated test URLs from ngrok tunnel.`;
+                message += `\n\n✨ Using ngrok test URLs`;
             }
 
             return textResult(message);
