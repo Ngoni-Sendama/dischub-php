@@ -205,7 +205,7 @@ export function createDischubServer(): McpServer {
         {
             title: "Create a Dischub payment",
             description:
-                "Create and initiate a Dischub payment with an amount and phone number. Returns a payment URL that should be opened in a browser. Requires DISCHUB_API_KEY and DISCHUB_RECIPIENT in a .env file.",
+                "Create and initiate a Dischub payment. Supports redirect (bank portal) and non-redirect (direct payment method) payments. Returns a payment URL that should be opened in a browser. Requires DISCHUB_API_KEY and DISCHUB_RECIPIENT in a .env file.",
             inputSchema: {
                 order_id: z
                     .union([z.string(), z.number()])
@@ -216,9 +216,26 @@ export function createDischubServer(): McpServer {
                 amount: z
                     .union([z.string(), z.number()])
                     .describe("Payment amount greater than 0 and less than 100000."),
+                integration: z
+                    .enum(["redirect", "non_redirect"])
+                    .optional()
+                    .describe("Payment type: 'redirect' (bank portal) or 'non_redirect' (direct method). Defaults to 'redirect'."),
                 payment_method: z
                     .string()
-                    .describe("Payment method: ecocash, innbucks, omari, or zimswitch."),
+                    .optional()
+                    .describe("For non_redirect only: ecocash, innbucks, omari, or zimswitch."),
+                redirect_url: z
+                    .string()
+                    .optional()
+                    .describe("For redirect payments: HTTP/HTTPS URL to return customer after payment."),
+                callback_url: z
+                    .string()
+                    .optional()
+                    .describe("HTTPS webhook URL for payment notifications. Optional for redirect, required for non_redirect."),
+                mode: z
+                    .enum(["test", "live"])
+                    .optional()
+                    .describe("For redirect payments: 'test' or 'live'. Defaults to 'test'."),
                 recipient: z
                     .string()
                     .optional()
@@ -231,7 +248,17 @@ export function createDischubServer(): McpServer {
                 openWorldHint: true,
             },
         },
-        async ({ order_id: orderIdInput, sender, amount: amountInput, payment_method, recipient }) => {
+        async ({
+            order_id: orderIdInput,
+            sender,
+            amount: amountInput,
+            integration = "redirect",
+            payment_method,
+            redirect_url,
+            callback_url,
+            mode = "test",
+            recipient,
+        }) => {
             const errors: ValidationIssue[] = [];
             const orderId = validateOrderId(orderIdInput, errors);
             const amountNum = typeof amountInput === "string" ? parseFloat(amountInput) : amountInput;
@@ -250,13 +277,25 @@ export function createDischubServer(): McpServer {
                 );
             }
 
-            const result = await createPayment(orderId, sender, amountNum, payment_method, recipient);
+            if (integration === "non_redirect" && !payment_method) {
+                return textResult(
+                    "For non_redirect payments, payment_method is required (ecocash, innbucks, omari, or zimswitch).",
+                    true,
+                );
+            }
+
+            if (integration === "redirect" && !redirect_url) {
+                return textResult("For redirect payments, redirect_url is required.", true);
+            }
+
+            const method = integration === "redirect" ? "redirect" : payment_method || "redirect";
+            const result = await createPayment(orderId, sender, amountNum, method, recipient);
 
             if (!result.ok) {
                 return textResult(result.error ?? "Payment creation failed.", true);
             }
 
-            let message = `✅ Payment created successfully!\n\nOrder ID: ${result.order_id}\n`;
+            let message = `✅ Payment created successfully!\n\nOrder ID: ${result.order_id}\nType: ${integration === "redirect" ? "Redirect (Bank Portal)" : "Non-Redirect (" + payment_method + ")"}\n`;
 
             if (result.transaction_reference) {
                 message += `Transaction Reference: ${result.transaction_reference}\n`;
