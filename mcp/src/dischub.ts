@@ -1,0 +1,143 @@
+export const DEFAULT_STATUS_URL = "https://dischub.co.zw/api/payment/status/3/step/";
+export const USER_AGENT = "dischub-mcp/0.1.0";
+
+export interface PaymentStatusResult {
+    ok: boolean;
+    order_id: string;
+    status: number;
+    data?: unknown;
+    error?: string;
+}
+
+function environmentValue(name: string): string | undefined {
+    const value = process.env[name];
+
+    if (value === undefined) {
+        return undefined;
+    }
+
+    const trimmed = value.trim();
+
+    return trimmed === "" ? undefined : trimmed;
+}
+
+function timeoutMs(): number {
+    const raw = environmentValue("DISCHUB_TIMEOUT");
+    const seconds = raw === undefined ? 30 : Number(raw);
+
+    if (!Number.isFinite(seconds) || seconds <= 0) {
+        return 30_000;
+    }
+
+    return Math.min(seconds, 120) * 1000;
+}
+
+export async function getPaymentStatus(
+    orderId: string,
+    recipientOverride?: string,
+): Promise<PaymentStatusResult> {
+    const apiKey = environmentValue("DISCHUB_API_KEY");
+
+    if (apiKey === undefined) {
+        return {
+            ok: false,
+            order_id: orderId,
+            status: 0,
+            error: "DISCHUB_API_KEY is not configured for the MCP server.",
+        };
+    }
+
+    const recipient =
+        recipientOverride?.trim() ||
+        environmentValue("DISCHUB_RECIPIENT") ||
+        environmentValue("DISCHUB_RECIPIENT_EMAIL");
+
+    if (recipient === undefined || recipient === "") {
+        return {
+            ok: false,
+            order_id: orderId,
+            status: 0,
+            error: "DISCHUB_RECIPIENT is not configured for the MCP server.",
+        };
+    }
+
+    const url = environmentValue("DISCHUB_STATUS_URL") ?? DEFAULT_STATUS_URL;
+
+    try {
+        new URL(url);
+    } catch {
+        return {
+            ok: false,
+            order_id: orderId,
+            status: 0,
+            error: "DISCHUB_STATUS_URL must be a valid URL.",
+        };
+    }
+
+    const controller = new AbortController();
+    const timeout = timeoutMs();
+    const timer = setTimeout(() => controller.abort(), timeout);
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                "User-Agent": USER_AGENT,
+                "X-Api-Key": apiKey,
+            },
+            body: JSON.stringify({
+                order_id: orderId,
+                recipient,
+            }),
+            signal: controller.signal,
+        });
+
+        const text = await response.text();
+        let data: unknown = text;
+
+        if (text.trim() !== "") {
+            try {
+                data = JSON.parse(text);
+            } catch {
+                data = text;
+            }
+        }
+
+        if (!response.ok) {
+            return {
+                ok: false,
+                order_id: orderId,
+                status: response.status,
+                data,
+                error: `Dischub returned HTTP ${response.status}.`,
+            };
+        }
+
+        return {
+            ok: true,
+            order_id: orderId,
+            status: response.status,
+            data,
+        };
+    } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+            return {
+                ok: false,
+                order_id: orderId,
+                status: 0,
+                error: `Dischub request timed out after ${Math.round(timeout / 1000)} seconds.`,
+            };
+        }
+
+        return {
+            ok: false,
+            order_id: orderId,
+            status: 0,
+            error: error instanceof Error ? error.message : "Unknown Dischub request error.",
+        };
+    } finally {
+        clearTimeout(timer);
+    }
+}

@@ -280,6 +280,16 @@ composer test
 
 The suite includes unit tests, Laravel service-provider tests and HTTP request/response tests using Laravel's HTTP client fake.
 
+## MCP Server
+
+This repository also ships a read-only [Model Context Protocol](https://modelcontextprotocol.io) server in [`mcp/`](https://github.com/Ngoni-Sendama/dischub-php/tree/main/mcp). It lets AI assistants search the package docs, validate payment payloads and read payment status without creating or modifying payments.
+
+```sh
+npx -y dischub-mcp
+```
+
+See [`mcp/README.md`](https://github.com/Ngoni-Sendama/dischub-php/blob/main/mcp/README.md) for Claude Desktop, opencode and Cursor configuration.
+
 ## Security
 
 ### Critical PHP advisory - 21 October 2026

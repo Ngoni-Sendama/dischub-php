@@ -1,0 +1,60 @@
+{
+    "name": "dischub-mcp",
+    "version": "0.1.0",
+    "description": "Read-only MCP server for Dischub documentation, payment validation and payment status.",
+    "type": "module",
+    "bin": {
+        "dischub-mcp": "dist/index.js"
+    },
+    "files": [
+        "dist",
+        "docs",
+        "README.md",
+        "LICENSE"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "scripts": {
+        "sync-docs": "node scripts/sync-docs.mjs",
+        "build": "npm run sync-docs && tsc -p tsconfig.json",
+        "dev": "npm run sync-docs && tsx src/index.ts",
+        "start": "node dist/index.js",
+        "test": "npm run sync-docs && vitest run",
+        "test:watch": "npm run sync-docs && vitest",
+        "typecheck": "tsc -p tsconfig.test.json",
+        "prepack": "npm run build"
+    },
+    "keywords": [
+        "mcp",
+        "model-context-protocol",
+        "dischub",
+        "payments",
+        "laravel",
+        "ecocash",
+        "innbucks",
+        "omari",
+        "zimswitch"
+    ],
+    "author": "Ngonidzashe Sendama",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Ngoni-Sendama/dischub-php.git",
+        "directory": "mcp"
+    },
+    "bugs": {
+        "url": "https://github.com/Ngoni-Sendama/dischub-php/issues"
+    },
+    "homepage": "https://github.com/Ngoni-Sendama/dischub-php/tree/main/mcp",
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.32.2",
+        "zod": "^4.6.7"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "tsx": "^4.23.15",
+        "typescript": "^7.0.2",
+        "vitest": "^5.0.5"
+    }
+}

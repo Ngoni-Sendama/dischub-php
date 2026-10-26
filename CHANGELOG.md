@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Read-only MCP server (`mcp/`) for documentation search, payment input validation and payment status lookups.
+
 ## [1.0.0] - 2026-10-26
 
 ### Added

@@ -7,4 +7,5 @@
 /.gitignore export-ignore
 /.editorconfig export-ignore
 /official-docs export-ignore
+/mcp export-ignore
 /3step.png export-ignore
