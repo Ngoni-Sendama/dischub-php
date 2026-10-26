@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dischub Payment - Callback Receiver</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .callback-list {
+            list-style: none;
+        }
+
+        .callback-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .callback-time {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .callback-data {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #333;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .creator {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .no-callbacks {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Dischub Callback Receiver</h1>
+            <p>Sample webhook endpoint for testing payment callbacks</p>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <h2>Callback Statistics</h2>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="totalCallbacks">0</div>
+                        <div class="stat-label">Total Callbacks</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="successCallbacks">0</div>
+                        <div class="stat-label">Successful</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="pendingCallbacks">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Received Callbacks</h2>
+                <div id="callbacksContainer">
+                    <div class="no-callbacks">No callbacks received yet. Waiting for payment notifications...</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="footer">
+                    <p>Sample page created by <span class="creator">Ngonidzashe Sendama</span></p>
+                    <p>📱 +263783883412 | Webhook testing for Dischub Payment MCP</p>
+                    <p style="margin-top: 10px; color: #ccc;">Auto-refreshes every 5 seconds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const callbacks = JSON.parse(localStorage.getItem('dischub_callbacks')) || [];
+
+        function updateDisplay() {
+            const container = document.getElementById('callbacksContainer');
+
+            if (callbacks.length === 0) {
+                container.innerHTML = '<div class="no-callbacks">No callbacks received yet. Waiting for payment notifications...</div>';
+            } else {
+                const html = callbacks.map((cb, index) => `
+                    <div class="callback-item">
+                        <div class="callback-time">
+                            Callback #${index + 1} - ${new Date(cb.time).toLocaleString()}
+                            <span class="status-badge ${cb.status === 'success' ? 'status-success' : 'status-pending'}">
+                                ${cb.status.toUpperCase()}
+                            </span>
+                        </div>
+                        <div class="callback-data">${JSON.stringify(cb.data, null, 2)}</div>
+                    </div>
+                `).join('');
+                container.innerHTML = html;
+            }
+
+            // Update stats
+            const success = callbacks.filter(cb => cb.status === 'success').length;
+            const pending = callbacks.filter(cb => cb.status === 'pending').length;
+
+            document.getElementById('totalCallbacks').textContent = callbacks.length;
+            document.getElementById('successCallbacks').textContent = success;
+            document.getElementById('pendingCallbacks').textContent = pending;
+        }
+
+        // Handle POST requests via query parameter
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('webhook')) {
+            try {
+                const data = JSON.parse(decodeURIComponent(params.get('webhook')));
+                callbacks.unshift({
+                    time: new Date().toISOString(),
+                    data: data,
+                    status: data.status || 'pending'
+                });
+                localStorage.setItem('dischub_callbacks', JSON.stringify(callbacks));
+            } catch (e) {
+                console.error('Invalid callback data', e);
+            }
+        }
+
+        updateDisplay();
+
+        // Auto-refresh every 5 seconds
+        setInterval(updateDisplay, 5000);
+
+        // Listen for storage changes (from other tabs)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'dischub_callbacks') {
+                location.reload();
+            }
+        });
+    </script>
+</body>
+</html>
