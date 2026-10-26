@@ -128,3 +128,17 @@ npm run sync-docs
 
 `npm run build` and `npm test` run the sync automatically. Use `npm pack --dry-run` to check
 the published package contents.
+
+## Publishing
+
+The GitHub workflow `.github/workflows/publish-mcp.yml` publishes this package when a tag
+matching `mcp-v*` is pushed. Add an `NPM_TOKEN` repository secret first.
+
+To publish manually:
+
+```sh
+npm login
+npm publish --access public
+```
+
+The package name `dischub-mcp` is currently available on npm.
