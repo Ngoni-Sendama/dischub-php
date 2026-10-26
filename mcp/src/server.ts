@@ -284,9 +284,24 @@ export function createDischubServer(): McpServer {
                 );
             }
 
-            if (integration === "redirect" && !redirect_url) {
+            // Auto-detect test URLs from environment if not provided
+            const testRedirectUrl = process.env.DISCHUB_TEST_REDIRECT_URL;
+            const testCallbackUrl = process.env.DISCHUB_TEST_CALLBACK_URL;
+
+            if (integration === "redirect" && !redirect_url && !testRedirectUrl) {
                 return textResult("For redirect payments, redirect_url is required.", true);
             }
+
+            if (!callback_url && !testCallbackUrl && integration === "non_redirect") {
+                return textResult(
+                    "For non_redirect payments, callback_url is required (or run ./mcp/scripts/setup-payment-test.sh for automatic testing URLs).",
+                    true,
+                );
+            }
+
+            // Use provided URLs or fallback to test URLs
+            const finalRedirectUrl = redirect_url || testRedirectUrl;
+            const finalCallbackUrl = callback_url || testCallbackUrl;
 
             const method = integration === "redirect" ? "redirect" : payment_method || "redirect";
             const result = await createPayment(orderId, sender, amountNum, method, recipient);
@@ -303,6 +318,12 @@ export function createDischubServer(): McpServer {
 
             if (result.payment_url) {
                 message += `\n🔗 Payment URL:\n${result.payment_url}\n\n⬆️ Open the URL above in your browser to complete the payment.`;
+            }
+
+            // Show if test URLs were used
+            if ((finalRedirectUrl && finalRedirectUrl === testRedirectUrl) ||
+                (finalCallbackUrl && finalCallbackUrl === testCallbackUrl)) {
+                message += `\n\n📍 Using auto-generated test URLs from ngrok tunnel.`;
             }
 
             return textResult(message);
