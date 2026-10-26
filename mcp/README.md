@@ -43,12 +43,25 @@ The server uses stdio and is normally started by an MCP client, not from a termi
 
 ## Configuration
 
+Set these environment variables in a `.env` file (create it in your project root):
+
+```env
+DISCHUB_API_KEY=your-api-key
+DISCHUB_RECIPIENT=merchant@example.com
+```
+
 | Variable | Required | Description |
 | --- | --- | --- |
 | `DISCHUB_API_KEY` | For status lookups | Dischub API key. Sent as `X-Api-Key`. |
 | `DISCHUB_RECIPIENT` | For status lookups | Merchant account email. `DISCHUB_RECIPIENT_EMAIL` is also accepted. |
 | `DISCHUB_STATUS_URL` | No | Override the status endpoint. |
 | `DISCHUB_TIMEOUT` | No | Request timeout in seconds. Default `30`, maximum `120`. |
+
+**Important:** Add `.env` to `.gitignore` to avoid committing secrets:
+
+```
+echo ".env" >> .gitignore
+```
 
 Documentation search and payment validation work without any environment variables.
 
@@ -60,23 +73,7 @@ Install and configure with one command:
 claude mcp add dischub-mcp -- npx dischub-mcp
 ```
 
-To set environment variables (for payment status lookups):
-
-```sh
-# Edit .claude/settings.json or ~/.claude.json to add:
-{
-    "mcpServers": {
-        "dischub-mcp": {
-            "command": "npx",
-            "args": ["dischub-mcp"],
-            "env": {
-                "DISCHUB_API_KEY": "your-api-key",
-                "DISCHUB_RECIPIENT": "merchant@example.com"
-            }
-        }
-    }
-}
-```
+The server reads `DISCHUB_API_KEY` and `DISCHUB_RECIPIENT` from your `.env` file automatically.
 
 ### Claude Desktop
 
@@ -87,15 +84,13 @@ Add this to `claude_desktop_config.json`:
     "mcpServers": {
         "dischub": {
             "command": "npx",
-            "args": ["-y", "dischub-mcp"],
-            "env": {
-                "DISCHUB_API_KEY": "your-api-key",
-                "DISCHUB_RECIPIENT": "merchant@example.com"
-            }
+            "args": ["-y", "dischub-mcp"]
         }
     }
 }
 ```
+
+Create a `.env` file in your home directory or project root with your credentials.
 
 ### opencode
 
@@ -108,26 +103,31 @@ Add this to `opencode.json`:
         "dischub": {
             "type": "local",
             "command": ["npx", "-y", "dischub-mcp"],
-            "enabled": true,
-            "environment": {
-                "DISCHUB_API_KEY": "{env:DISCHUB_API_KEY}",
-                "DISCHUB_RECIPIENT": "{env:DISCHUB_RECIPIENT}"
-            }
+            "enabled": true
         }
     }
 }
 ```
 
-Restart opencode after changing the config.
+Create a `.env` file in your project root with:
+
+```env
+DISCHUB_API_KEY=your-api-key
+DISCHUB_RECIPIENT=merchant@example.com
+```
+
+Restart opencode after creating the `.env` file.
 
 ### Cursor and other clients
 
-Use the same command and environment variables:
+Use the same command:
 
 ```text
 command: npx
 args: -y dischub-mcp
 ```
+
+Create a `.env` file in your project root with your credentials.
 
 ## Security
 
