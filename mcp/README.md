@@ -52,6 +52,32 @@ The server uses stdio and is normally started by an MCP client, not from a termi
 
 Documentation search and payment validation work without any environment variables.
 
+### Claude Code CLI
+
+Install and configure with one command:
+
+```sh
+claude mcp add dischub-mcp -- npx dischub-mcp
+```
+
+To set environment variables (for payment status lookups):
+
+```sh
+# Edit .claude/settings.json or ~/.claude.json to add:
+{
+    "mcpServers": {
+        "dischub-mcp": {
+            "command": "npx",
+            "args": ["dischub-mcp"],
+            "env": {
+                "DISCHUB_API_KEY": "your-api-key",
+                "DISCHUB_RECIPIENT": "merchant@example.com"
+            }
+        }
+    }
+}
+```
+
 ### Claude Desktop
 
 Add this to `claude_desktop_config.json`:
@@ -129,25 +155,3 @@ npm run sync-docs
 `npm run build` and `npm test` run the sync automatically. Use `npm pack --dry-run` to check
 the published package contents.
 
-## Publishing
-
-The GitHub workflow `.github/workflows/publish-mcp.yml` publishes this package when a tag
-matching `mcp-v*` is pushed. Add an `NPM_TOKEN` repository secret first.
-
-To publish manually:
-
-```sh
-npm login
-npm publish --access public
-```
-
-npm requires two-factor authentication for publishing. If your account has 2FA enabled:
-
-```sh
-npm publish --access public --otp=123456
-```
-
-For CI, create a granular access token with **Bypass 2FA** enabled and store it as the
-`NPM_TOKEN` repository secret. The publish workflow passes it to npm as `NODE_AUTH_TOKEN`.
-
-The package name `dischub-mcp` is currently available on npm.
